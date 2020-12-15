@@ -6,7 +6,7 @@ import {fonts, getData} from '../../utils';
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 const direction = [
-  {x: 0, y: 3},
+  {x: -1, y: 3},
   {x: 4, y: 2.1},
 ];
 const color = [
@@ -25,29 +25,28 @@ export default class SplashScreen extends Component {
     };
   }
   componentDidMount() {
-    const getInfo = async () => {
-      const data = await getData('user');
-      console.log('data', data);
-      if (data != undefined) {
-        setTimeout(() => {
-          this.setState({isLoading: true});
-        }, 3000);
-        setTimeout(() => {
-          this.setState({isLoading: false});
-          this.props.navigation.replace('Home');
-        }, 8000);
-      } else {
-        setTimeout(() => {
-          this.setState({isLoading: true});
-        }, 3000);
-        setTimeout(() => {
-          this.setState({isLoading: false});
-          this.props.navigation.replace('Login');
-        }, 8000);
-      }
-    };
-    getInfo();
+    this.getInfo();
   }
+  getInfo = async () => {
+    const data = await getData('user');
+    if (data != undefined) {
+      setTimeout(() => {
+        this.setState({isLoading: true});
+      }, 3000);
+      setTimeout(() => {
+        this.setState({isLoading: false});
+        this.props.navigation.replace('Home');
+      }, 8000);
+    } else {
+      setTimeout(() => {
+        this.setState({isLoading: true});
+      }, 3000);
+      setTimeout(() => {
+        this.setState({isLoading: false});
+        this.props.navigation.replace('Login');
+      }, 8000);
+    }
+  };
   render() {
     return (
       <View style={{flex: 1}}>

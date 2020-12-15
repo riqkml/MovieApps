@@ -3,13 +3,13 @@ import {Dimensions, Text, View, StyleSheet, ScrollView} from 'react-native';
 import {showMessage} from 'react-native-flash-message';
 import LinearGradient from 'react-native-linear-gradient';
 import {Button, Gap, Input, Loading} from '../../component';
-import {colors, fonts, storeData} from '../../utils';
+import {colors, fonts, storeData, successAlert, dangerAlert} from '../../utils';
 import Axios from 'axios';
 
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 const direction = [
-  {x: 0, y: 3},
+  {x: -1, y: 3},
   {x: 4, y: 2.1},
 ];
 const color = [
@@ -29,52 +29,41 @@ export default class LoginScreen extends Component {
       isLoading: false,
     };
   }
-  render() {
-    const sendData = (data) => {
-      try {
+  async sendData(data) {
+    try {
+      if (data.user != '' && data.pass != '') {
         this.setState({isLoading: true});
-        Axios.post('https://s1mple-tours-be.herokuapp.com/auth/client/login', {
-          username: data.user,
-          password: data.pass,
-        })
-          .then(async (res) => {
-            console.log(res);
-            showMessage({
-              message: 'Success',
-              description: `Welcome to apps ${data.user}`,
-              type: 'success',
-              icon: 'success',
-            });
-            const infoUser = {
-              name: data.user,
-              token: res.data.token,
-              uid: res.data.payload.userId,
-            };
-            storeData('user', infoUser);
-            this.props.navigation.replace('Home');
-            this.setState({isLoading: false});
-          })
-          .catch((err) => {
-            console.log(err);
-            showMessage({
-              message: err.name,
-              description: err.message,
-              type: 'danger',
-              icon: 'danger',
-            });
-            this.setState({isLoading: false});
-          });
-      } catch (err) {
-        showMessage({
-          message: 'Gagal',
-          description: 'Login tidak dapat diproses',
-          type: 'danger',
-          icon: 'danger',
-        });
+        const sendData = await Axios.post(
+          'https://s1mple-tours-be.herokuapp.com/auth/client/login',
+          {
+            username: data.user,
+            password: data.pass,
+          },
+        );
+        if (sendData.data.token) {
+          successAlert('Success', `Welcome to apps ${data.user}`);
+          const infoUser = {
+            name: data.user,
+            token: sendData.data.token,
+            uid: sendData.data.payload.userId,
+          };
+          storeData('user', infoUser);
+          this.props.navigation.replace('Home');
+          this.setState({isLoading: false});
+        }
+      } else {
+        dangerAlert('Form', 'Form belum lengkap');
+        console.log(data);
         this.setState({isLoading: false});
       }
-    };
-    console.log('link', this.state.username, this.state.password);
+    } catch (e) {
+      dangerAlert(e.name, e.message);
+      this.setState({isLoading: false});
+    }
+  }
+  render() {
+    const {username, password, isLoading} = this.state;
+    console.log('asd', username, password, this.state);
     return (
       <View style={{flex: 1}}>
         <LinearGradient
@@ -106,7 +95,7 @@ export default class LoginScreen extends Component {
               <Button
                 label="Login"
                 click={() =>
-                  sendData({
+                  this.sendData({
                     user: this.state.username,
                     pass: this.state.password,
                   })
@@ -115,7 +104,7 @@ export default class LoginScreen extends Component {
             </View>
           </View>
         </LinearGradient>
-        {this.state.isLoading && <Loading />}
+        {isLoading && <Loading />}
       </View>
     );
   }

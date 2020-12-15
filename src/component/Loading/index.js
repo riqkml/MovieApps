@@ -19,7 +19,7 @@ export default class Profile extends Component {
     };
   }
   componentDidMount() {
-    setInterval(() => {
+    this.interval = setInterval(() => {
       this.setState({
         title: this.state.obj[
           Math.floor(Math.random() * this.state.obj.length)
@@ -27,7 +27,9 @@ export default class Profile extends Component {
       });
     }, 3000);
   }
-
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
   render() {
     return (
       <Modal>
@@ -51,7 +53,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
-    fontFamily: fonts[600],
+    fontFamily: fonts.extralight,
     color: colors.white,
     marginTop: 20,
     textAlign: 'center',
