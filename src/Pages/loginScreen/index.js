@@ -32,24 +32,31 @@ export default class LoginScreen extends Component {
   async sendData(data) {
     try {
       if (data.user != '' && data.pass != '') {
-        this.setState({isLoading: true});
-        const sendData = await Axios.post(
-          'https://s1mple-tours-be.herokuapp.com/auth/client/login',
-          {
-            username: data.user,
-            password: data.pass,
-          },
-        );
-        if (sendData.data.token) {
-          successAlert('Success', `Welcome to apps ${data.user}`);
-          const infoUser = {
-            name: data.user,
-            token: sendData.data.token,
-            uid: sendData.data.payload.userId,
-          };
-          storeData('user', infoUser);
-          this.props.navigation.replace('Home');
-          this.setState({isLoading: false});
+        const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        const user = pattern.test(String(data.user).toLowerCase());
+        console.log(user);
+        if (user) {
+          this.setState({isLoading: true});
+          const sendData = await Axios.post(
+            'https://s1mple-tours-be.herokuapp.com/auth/client/login',
+            {
+              username: data.user,
+              password: data.pass,
+            },
+          );
+          if (sendData.data.token) {
+            successAlert('Success', `Welcome to apps ${data.user}`);
+            const infoUser = {
+              name: data.user,
+              token: sendData.data.token,
+              uid: sendData.data.payload.userId,
+            };
+            storeData('user', infoUser);
+            this.props.navigation.replace('Home');
+            this.setState({isLoading: false});
+          }
+        } else {
+          dangerAlert('Gagal', 'Login Menggunakan Email');
         }
       } else {
         dangerAlert('Form', 'Form belum lengkap');
@@ -63,7 +70,6 @@ export default class LoginScreen extends Component {
   }
   render() {
     const {username, password, isLoading} = this.state;
-    console.log('asd', username, password, this.state);
     return (
       <View style={{flex: 1}}>
         <LinearGradient
