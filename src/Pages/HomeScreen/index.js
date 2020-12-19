@@ -1,9 +1,16 @@
 import Axios from 'axios';
 import React, {Component} from 'react';
-import {Text, StyleSheet, View, Dimensions, ScrollView} from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  View,
+  Dimensions,
+  ScrollView,
+  FlatList,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {connect} from 'react-redux';
-import {MovieList, Profile} from '../../component';
+import {Loading, MovieList, Profile} from '../../component';
 import {dangerAlert, getData} from '../../utils';
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
@@ -23,60 +30,55 @@ class HomeScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      moviesone: [],
-      moviestwo: [],
-      moviesthree: [],
+      movies: [],
       name: '',
+      isLoading: false,
     };
   }
   componentDidMount() {
-    if (this.props.naruto && this.props.avenger && this.props.onePiece) {
-      this.setState({
-        moviesone: this.props.naruto,
-        moviestwo: this.props.avenger,
-        moviesthree: this.props.onePiece,
-      });
-    } else {
-      this.getMovie('naruto', 'Marvel', 'one-piece');
+    this._getMovie();
+  }
+  async _getMovie() {
+    try {
+      this.setState({isLoading: true});
+      const response = await Axios.get(
+        `http://www.omdbapi.com/?s=marvel&apikey=997061b4`,
+      );
+      if (response.data.Response) {
+        const movie = response.data.Search;
+        const data = await getData('user');
+        this.setState({
+          name: data.name,
+          movies: movie,
+        });
+        this.setState({isLoading: false});
+      } else {
+        dangerAlert('Gagal', 'Terjadi Masalah');
+        this.setState({isLoading: false});
+      }
+    } catch (e) {
+      dangerAlert(e.name, e.message);
+      this.setState({isLoading: false});
     }
   }
-  getMovie = async (listNaruto, listAvenger, listOnePiece) => {
-    const send = await Promise.all([
-      Axios.get(`http://www.omdbapi.com/?s=${listNaruto}&apikey=997061b4`),
-      Axios.get(`http://www.omdbapi.com/?s=${listAvenger}&apikey=997061b4`),
-      Axios.get(`http://www.omdbapi.com/?s=${listOnePiece}&apikey=997061b4`),
-    ]);
-    if (send) {
-      const movie = res[0].data.Search;
-      const movietwo = res[1].data.Search;
-      const moviethree = res[2].data.Search;
-      const data = await getData('user');
-      this.setState({
-        name: data.name,
-        moviesone: movie,
-        moviestwo: movietwo,
-        moviesthree: moviethree,
-      });
-    } else {
-      dangerAlert('Gagal', 'Terjadi Masalah');
-    }
-  };
   render() {
-    const {moviesone, moviestwo, moviesthree, name} = this.state;
-    console.log('asd', this.props);
+    const {name, movies, isLoading} = this.state;
     return (
-      <ScrollView showsHorizontalScrollIndicator={false}>
-        <LinearGradient
-          start={direction[0]}
-          end={direction[1]}
-          colors={color}
-          style={styles.linear}>
-          <Profile name={name} />
-          <MovieList title="Naruto" data={moviesone} />
-          <MovieList title="Marvel" data={moviestwo} />
-          <MovieList title="One Piece" data={moviesthree} />
-        </LinearGradient>
-      </ScrollView>
+      <LinearGradient
+        start={direction[0]}
+        end={direction[1]}
+        colors={color}
+        style={styles.linear}>
+        <Profile name={name} />
+        <FlatList
+          data={movies}
+          renderItem={({item: movie}) => {
+            return <MovieList data={movie} />;
+          }}
+          keyExtractor={(movie) => movie.imdbID}
+        />
+        {isLoading && <Loading />}
+      </LinearGradient>
     );
   }
 }

@@ -34,8 +34,8 @@ export default class LoginScreen extends Component {
       if (data.user != '' && data.pass != '') {
         const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         const user = pattern.test(String(data.user).toLowerCase());
-        console.log(user);
         if (user) {
+          console.log(data);
           this.setState({isLoading: true});
           const sendData = await Axios.post(
             'https://s1mple-tours-be.herokuapp.com/auth/client/login',
@@ -44,6 +44,7 @@ export default class LoginScreen extends Component {
               password: data.pass,
             },
           );
+          console.log('awe', sendData);
           if (sendData.data.token) {
             successAlert('Success', `Welcome to apps ${data.user}`);
             const infoUser = {
@@ -60,7 +61,6 @@ export default class LoginScreen extends Component {
         }
       } else {
         dangerAlert('Form', 'Form belum lengkap');
-        console.log(data);
         this.setState({isLoading: false});
       }
     } catch (e) {

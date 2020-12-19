@@ -1,14 +1,5 @@
-import Axios from 'axios';
 import React, {Component} from 'react';
-import {
-  Text,
-  StyleSheet,
-  View,
-  Image,
-  ScrollView,
-  Dimensions,
-} from 'react-native';
-import {Gap} from '..';
+import {Text, StyleSheet, View, Image, Dimensions} from 'react-native';
 import {fonts} from '../../utils';
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
@@ -16,36 +7,31 @@ export default class MovieList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      title: this.props.title,
-      list: this.props.state,
-      data: this.props.data,
+      movie: this.props.data,
     };
   }
   render() {
+    const {movie} = this.state;
+    const imagePoster = {uri: movie.Poster};
     return (
-      <View style={styles.wrapper}>
-        <Text style={styles.titleMovie}>{this.props.title}</Text>
-        <Gap height={20} />
-        <View style={styles.containScroll}>
-          <ScrollView horizontal>
-            <View style={styles.box}>
-              <Gap width={20} />
-              {this.props.data.map((val, index) => {
-                return (
-                  <View key={index} style={styles.card}>
-                    <Image source={{uri: val.Poster}} style={styles.img} />
-                    <Gap height={5} />
-                    <Text style={styles.label} numberOfLines={2}>
-                      {val.Title}
-                    </Text>
-                    <Text style={styles.subLabel} numberOfLines={2}>
-                      {val.Year}
-                    </Text>
-                  </View>
-                );
-              })}
+      <View style={styles.card} key={movie.imdbID}>
+        <View>
+          <Image source={imagePoster} style={styles.img} />
+        </View>
+        <View style={styles.tabImg}>
+          <View>
+            <Text style={styles.label} numberOfLines={2}>
+              {movie.Title}
+            </Text>
+          </View>
+          <View style={styles.tabDesc}>
+            <View style={styles.chip()}>
+              <Text style={styles.subLabel}>{movie.Type}</Text>
             </View>
-          </ScrollView>
+            <View style={styles.chip()}>
+              <Text style={styles.subLabel}>{movie.Year}</Text>
+            </View>
+          </View>
         </View>
       </View>
     );
@@ -53,12 +39,25 @@ export default class MovieList extends Component {
 }
 
 const styles = StyleSheet.create({
+  tabImg: {flex: 1, paddingHorizontal: 10},
+  tabDesc: {flexDirection: 'row', paddingVertical: 20},
   wrapper: {paddingLeft: 20},
   titleMovie: {color: 'white', fontFamily: fonts.semibold, fontSize: 22},
   containScroll: {marginLeft: -20},
   box: {flex: 1, flexDirection: 'row'},
-  card: {maxWidth: width * 0.35, marginRight: 20},
-  img: {width: width * 0.35, height: height * 0.25},
-  label: {color: 'white', fontFamily: fonts.regular},
-  subLabel: {color: 'white', fontFamily: fonts.extralight},
+  card: {
+    marginBottom: 10,
+    flexDirection: 'row',
+    padding: 10,
+  },
+  img: {width: width * 0.35, height: height * 0.3},
+  label: {color: 'white', fontFamily: fonts.semibold, fontSize: 22},
+  chip: () => ({
+    backgroundColor: '#7f8c8d',
+    padding: 2,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    marginRight: 5,
+  }),
+  subLabel: {color: 'white', fontFamily: fonts.regular, fontSize: 16},
 });
